@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "JSON Helper",
+  "version": "1.0.0",
+  "description": "Formate et structure les réponses JSON dans le navigateur.",
+  "minimum_chrome_version": "102",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ]
+}

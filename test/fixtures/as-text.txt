@@ -1,0 +1,1 @@
+{"servi_en": "text/plain", "detecte_par": "heuristique sur le contenu"}

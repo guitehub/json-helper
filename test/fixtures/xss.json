@@ -1,0 +1,7 @@
+{
+  "<img src=x onerror=alert('cle')>": "<script>alert('valeur')</script>",
+  "html": "<b>doit s'afficher en texte</b>",
+  "javascript_link": "javascript:alert(1)",
+  "data_link": "data:text/html,<script>alert(1)</script>",
+  "safe_link": "https://example.com/?q=<x>"
+}

@@ -1,0 +1,12 @@
+{
+  "level1": {
+    "level2": {
+      "level3": {
+        "level4": {
+          "level5": { "deep": "valeur au niveau 6", "list": [1, [2, [3, [4, [5]]]]] }
+        }
+      }
+    },
+    "siblings": [{ "a": 1 }, { "b": 2 }, { "c": [] }, { "d": {} }]
+  }
+}

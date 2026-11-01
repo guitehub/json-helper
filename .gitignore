@@ -1,0 +1,29 @@
+# Build
+dist/
+*.zip
+*.crx
+*.pem
+
+# Fixtures générées
+test/fixtures/large.json
+
+# Node
+node_modules/
+npm-debug.log*
+*.log
+
+# Environnement
+.env
+.env.*
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*~

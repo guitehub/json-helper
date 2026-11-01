@@ -1,0 +1,10 @@
+[
+  { "id": 1, "title": "Premier" },
+  { "id": 2, "title": "Second" },
+  "une chaîne",
+  3.14,
+  true,
+  null,
+  [],
+  {}
+]

@@ -1,0 +1,283 @@
+/*
+ * JSON Helper — styles.
+ *
+ * Ce fichier est injecté par le manifest sur TOUTES les pages : chaque règle
+ * est donc préfixée (.jh-*, html.jh-active) pour ne jamais affecter un site
+ * sur lequel l'extension ne s'est pas activée.
+ */
+
+/* ---------- Thème clair (par défaut) ---------- */
+html.jh-active {
+  --jh-bg: #ffffff;
+  --jh-fg: #1f2328;
+  --jh-muted: #656d76;
+  --jh-guide: #d0d7de;
+  --jh-hover: #f3f4f6;
+  --jh-bar-bg: #f6f8fa;
+  --jh-bar-border: #d0d7de;
+  --jh-btn-bg: #ffffff;
+  --jh-btn-active-bg: #0969da;
+  --jh-btn-active-fg: #ffffff;
+  --jh-banner-bg: #fff8c5;
+  --jh-banner-border: #d4a72c;
+  --jh-key: #0550ae;
+  --jh-string: #116329;
+  --jh-number: #bc4c00;
+  --jh-bool: #8250df;
+  --jh-null: #6e7781;
+  --jh-font: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+
+/* ---------- Thème sombre (suit le système) ---------- */
+@media (prefers-color-scheme: dark) {
+  html.jh-active {
+    --jh-bg: #0d1117;
+    --jh-fg: #e6edf3;
+    --jh-muted: #8b949e;
+    --jh-guide: #30363d;
+    --jh-hover: #161b22;
+    --jh-bar-bg: #161b22;
+    --jh-bar-border: #30363d;
+    --jh-btn-bg: #21262d;
+    --jh-btn-active-bg: #1f6feb;
+    --jh-btn-active-fg: #ffffff;
+    --jh-banner-bg: #3b2e00;
+    --jh-banner-border: #9e6a03;
+    --jh-key: #79c0ff;
+    --jh-string: #7ee787;
+    --jh-number: #ffa657;
+    --jh-bool: #d2a8ff;
+    --jh-null: #8b949e;
+    color-scheme: dark;
+  }
+}
+
+html.jh-active,
+html.jh-active body {
+  margin: 0;
+  padding: 0;
+  background: var(--jh-bg);
+  color: var(--jh-fg);
+}
+
+.jh-app {
+  font-family: var(--jh-font);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.jh-app [hidden] {
+  display: none !important;
+}
+
+.jh-app.jh-busy {
+  cursor: progress;
+}
+
+/* ---------- Barre d'outils ---------- */
+.jh-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--jh-bar-bg);
+  border-bottom: 1px solid var(--jh-bar-border);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.jh-title {
+  font-weight: 600;
+}
+
+.jh-meta {
+  color: var(--jh-muted);
+}
+
+.jh-spacer {
+  flex: 1;
+}
+
+.jh-btn {
+  font: inherit;
+  color: var(--jh-fg);
+  background: var(--jh-btn-bg);
+  border: 1px solid var(--jh-bar-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.jh-btn:hover:not(:disabled) {
+  border-color: var(--jh-muted);
+}
+
+.jh-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.jh-btn:focus-visible,
+.jh-toggle:focus-visible {
+  outline: 2px solid var(--jh-btn-active-bg);
+  outline-offset: 1px;
+}
+
+.jh-switch {
+  display: inline-flex;
+}
+
+.jh-switch .jh-btn {
+  border-radius: 0;
+}
+
+.jh-switch .jh-btn:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.jh-switch .jh-btn:last-child {
+  border-radius: 0 6px 6px 0;
+  border-left: none;
+}
+
+.jh-switch .jh-btn[aria-pressed="true"] {
+  background: var(--jh-btn-active-bg);
+  border-color: var(--jh-btn-active-bg);
+  color: var(--jh-btn-active-fg);
+}
+
+/* ---------- Bandeau d'avertissement ---------- */
+.jh-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 16px 0;
+  padding: 8px 12px;
+  background: var(--jh-banner-bg);
+  border: 1px solid var(--jh-banner-border);
+  border-radius: 6px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- Vue brute ---------- */
+.jh-raw {
+  margin: 0;
+  padding: 12px 16px;
+  font-family: var(--jh-font);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Arborescence ---------- */
+.jh-tree {
+  padding: 12px 16px 24px 32px;
+}
+
+.jh-line {
+  position: relative;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.jh-head:hover {
+  background: var(--jh-hover);
+}
+
+.jh-children {
+  margin-left: 0.35em;
+  padding-left: 1.4em;
+  border-left: 1px solid var(--jh-guide);
+}
+
+/* Flèche dans la marge gauche de la ligne */
+.jh-toggle {
+  position: absolute;
+  left: -1.4em;
+  width: 1.2em;
+  text-align: center;
+  color: var(--jh-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.jh-toggle::before {
+  content: "\25BE"; /* ▾ */
+}
+
+.jh-collapsed > .jh-head > .jh-toggle::before {
+  content: "\25B8"; /* ▸ */
+}
+
+.jh-toggle:hover {
+  color: var(--jh-fg);
+}
+
+/* Replié : on montre « … n items } » et on cache enfants + fermeture */
+.jh-node.jh-collapsed > .jh-children,
+.jh-node.jh-collapsed > .jh-foot {
+  display: none;
+}
+
+.jh-node:not(.jh-collapsed) > .jh-head > .jh-collapsed-tail {
+  display: none;
+}
+
+.jh-summary {
+  margin: 0 0.3em;
+  padding: 0 0.4em;
+  border-radius: 4px;
+  background: var(--jh-hover);
+  color: var(--jh-muted);
+  font-style: italic;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ---------- Coloration syntaxique ---------- */
+.jh-key {
+  color: var(--jh-key);
+}
+
+.jh-index {
+  color: var(--jh-muted);
+  user-select: none;
+}
+
+.jh-string,
+.jh-link {
+  color: var(--jh-string);
+}
+
+.jh-link {
+  text-decoration: underline;
+  text-decoration-color: var(--jh-guide);
+}
+
+.jh-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.jh-number {
+  color: var(--jh-number);
+}
+
+.jh-bool {
+  color: var(--jh-bool);
+  font-weight: 600;
+}
+
+.jh-null {
+  color: var(--jh-null);
+  font-style: italic;
+}
+
+.jh-bracket,
+.jh-punct {
+  color: var(--jh-muted);
+}
