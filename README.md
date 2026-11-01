@@ -184,7 +184,7 @@ Aucun pour utiliser l'extension. Pour le développement : **Node.js 18+** (tests
 ### Commandes
 
 ```sh
-node --test test/                    # tests unitaires
+node --test                          # tests unitaires
 node scripts/make-large-fixture.js   # fixture > 2 Mo pour la recette
 node scripts/make-icons.js           # régénère les icônes
 ./scripts/package.sh                 # crée le zip distribuable dans dist/
@@ -209,7 +209,7 @@ node scripts/make-icons.js           # régénère les icônes
 
 1. Incrémentez `version` dans `manifest.json`.
 2. Ajoutez une section `## X.Y.Z — AAAA-MM-JJ` dans `CHANGELOG.md`.
-3. Lancez `node --test test/` et déroulez la recette.
+3. Lancez `node --test` et déroulez la recette.
 4. Commitez, puis créez et poussez l'étiquette :
    ```sh
    git tag vX.Y.Z

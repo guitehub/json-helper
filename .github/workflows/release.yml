@@ -24,16 +24,16 @@ jobs:
       TAG: ${{ inputs.tag || github.ref_name }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.tag || github.ref }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Tests
-        run: node --test test/
+        run: node --test
 
       - name: Vérifier que l'étiquette correspond au manifest
         run: |
@@ -45,7 +45,9 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Paquet
-        run: ./scripts/package.sh
+        run: |
+          command -v zip > /dev/null || { sudo apt-get update -q && sudo apt-get install -y -q zip; }
+          ./scripts/package.sh
 
       - name: Notes de version (section du CHANGELOG)
         run: |
