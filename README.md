@@ -208,9 +208,19 @@ node scripts/make-icons.js           # régénère les icônes
 ### Publier une nouvelle version
 
 1. Incrémentez `version` dans `manifest.json`.
-2. Ajoutez une entrée dans `CHANGELOG.md`.
+2. Ajoutez une section `## X.Y.Z — AAAA-MM-JJ` dans `CHANGELOG.md`.
 3. Lancez `node --test test/` et déroulez la recette.
-4. Lancez `./scripts/package.sh`.
+4. Commitez, puis créez et poussez l'étiquette :
+   ```sh
+   git tag vX.Y.Z
+   git push origin main vX.Y.Z
+   ```
+
+Le push de l'étiquette déclenche le workflow [`release.yml`](.github/workflows/release.yml). Il relance les tests, vérifie que l'étiquette correspond à la version du manifest, construit le zip avec `scripts/package.sh` et publie une release GitHub. Le zip y est joint et la section du CHANGELOG sert de notes de version.
+
+Pour publier une étiquette déjà poussée : onglet **Actions** › **Release** › **Run workflow**, en indiquant l'étiquette (ex. `v1.1.0`).
+
+En local, `./scripts/package.sh` reste utilisable pour tester le zip.
 
 ---
 

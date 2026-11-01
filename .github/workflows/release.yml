@@ -1,0 +1,69 @@
+# Publie une release GitHub avec le zip de l'extension.
+#
+# Déclenchement :
+#  - automatique au push d'une étiquette vX.Y.Z (git push origin vX.Y.Z) ;
+#  - manuel depuis l'onglet Actions, pour une étiquette déjà poussée.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Étiquette existante à publier (ex. v1.1.0)
+        required: true
+
+permissions:
+  contents: write # créer la release et y joindre le zip
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tests
+        run: node --test test/
+
+      - name: Vérifier que l'étiquette correspond au manifest
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version")
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::L'étiquette $TAG ne correspond pas à la version du manifest ($VERSION)."
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Paquet
+        run: ./scripts/package.sh
+
+      - name: Notes de version (section du CHANGELOG)
+        run: |
+          awk -v v="$VERSION" '
+            /^## / { if (found) exit; if (index($0, "## " v " ") == 1 || $0 == "## " v) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::Aucune section « ## $VERSION » dans CHANGELOG.md."
+            exit 1
+          fi
+          cat notes.md
+
+      - name: Publier la release
+        run: |
+          ZIP="dist/json-helper-$VERSION.zip"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" --verify-tag --title "JSON Helper $VERSION" --notes-file notes.md
+          fi
