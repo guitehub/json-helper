@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-11-01
+
+- Chemin de la valeur sélectionnée : un clic sur une ligne affiche son chemin
+  (`data.items[3].id`) dans une barre en bas de page, en notation JS ou jq.
+- Boutons « Copier le chemin » et « Copier la valeur » (JSON indenté fidèle à
+  la source : ordre des clés, texte exact des nombres, clés dupliquées).
+
 ## 1.0.0 — 2026-11-01
 
 Première version.

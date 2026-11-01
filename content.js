@@ -194,6 +194,70 @@
     return typeof value === 'string' && value.length < 2048 && /^https?:\/\/[^\s"<>]+$/i.test(value);
   }
 
+  const JS_IDENT = /^[A-Za-z_$][\w$]*$/;
+  const JQ_IDENT = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+  /**
+   * Chemin d'accès à une valeur, à partir de ses segments
+   * (chaîne = clé d'objet, nombre = index de tableau).
+   *  - 'js' : data.items[3]["content-type"]  (racine : chaîne vide)
+   *  - 'jq' : .data.items[3]["content-type"] (racine : « . »)
+   */
+  function formatPath(segments, style) {
+    const jq = style === 'jq';
+    const ident = jq ? JQ_IDENT : JS_IDENT;
+    let out = '';
+    for (const s of segments) {
+      if (typeof s === 'number') out += '[' + s + ']';
+      else if (ident.test(s)) out += '.' + s;
+      else out += '[' + JSON.stringify(s) + ']';
+    }
+    if (jq) return out.startsWith('.') ? out : '.' + out;
+    return out.startsWith('.') ? out.slice(1) : out;
+  }
+
+  /**
+   * Sérialise un nœud de parseAst en JSON indenté (2 espaces), en restant
+   * fidèle à la source : ordre des clés, texte exact des nombres, doublons.
+   */
+  function stringifyAst(root) {
+    const out = [];
+    (function write(node, indent) {
+      switch (node.t) {
+        case 's':
+          out.push(JSON.stringify(node.v));
+          return;
+        case 'n':
+          out.push(node.raw);
+          return;
+        case 'b':
+          out.push(String(node.v));
+          return;
+        case 'z':
+          out.push('null');
+          return;
+      }
+      const isArray = node.t === 'a';
+      if (node.e.length === 0) {
+        out.push(isArray ? '[]' : '{}');
+        return;
+      }
+      const inner = indent + '  ';
+      out.push(isArray ? '[' : '{');
+      node.e.forEach((entry, index) => {
+        out.push(index ? ',\n' : '\n', inner);
+        if (isArray) {
+          write(entry, inner);
+        } else {
+          out.push(JSON.stringify(entry[0]), ': ');
+          write(entry[1], inner);
+        }
+      });
+      out.push('\n', indent, isArray ? ']' : '}');
+    })(root, '');
+    return out.join('');
+  }
+
   const api = {
     LARGE_THRESHOLD,
     isJsonContentType,
@@ -204,6 +268,8 @@
     itemsLabel,
     formatSize,
     isLinkable,
+    formatPath,
+    stringifyAst,
   };
 
   if (typeof module === 'object' && module && module.exports) {
@@ -284,8 +350,12 @@
   /* Rendu de l'arborescence (§2.2)                                      */
   /* ------------------------------------------------------------------ */
 
-  /** Nœud DOM conteneur -> nœud de l'arbre JSON (pour le rendu paresseux). */
-  const astOf = new WeakMap();
+  /**
+   * Élément DOM d'une entrée -> { key, node } : clé (chaîne), index (nombre)
+   * ou null pour la racine, et nœud de l'arbre JSON. L'élément est la ligne
+   * pour une valeur simple, le bloc .jh-node pour un objet/tableau non vide.
+   */
+  const entryOf = new WeakMap();
   const rendered = new WeakSet();
 
   function appendKey(line, key, keyKind) {
@@ -340,6 +410,7 @@
     appendKey(line, key, keyKind);
     line.appendChild(primitiveElement(node));
     if (!isLast) line.appendChild(comma());
+    entryOf.set(line, { key, node });
     parent.appendChild(line);
   }
 
@@ -372,7 +443,7 @@
 
     wrapper.appendChild(head);
     wrapper.appendChild(foot);
-    astOf.set(wrapper, node);
+    entryOf.set(wrapper, { key, node });
     return wrapper;
   }
 
@@ -380,7 +451,7 @@
   function ensureRendered(wrapper) {
     if (rendered.has(wrapper)) return 0;
     rendered.add(wrapper);
-    const node = astOf.get(wrapper);
+    const { node } = entryOf.get(wrapper);
     const children = el('div', 'jh-children');
     const last = node.e.length - 1;
     if (node.t === 'a') {
@@ -397,6 +468,45 @@
     wrapper.classList.toggle('jh-collapsed', !expanded);
     const toggle = wrapper.firstChild.firstChild;
     toggle.setAttribute('aria-expanded', String(expanded));
+  }
+
+  /** Segments du chemin de la racine jusqu'à l'entrée (élément DOM). */
+  function pathSegments(entry) {
+    const segments = [];
+    for (let e = entry; e; e = e.parentElement.closest('.jh-node')) {
+      const info = entryOf.get(e);
+      if (info && info.key != null) segments.unshift(info.key);
+    }
+    return segments;
+  }
+
+  /** Entrée (ligne ou bloc) correspondant à une ligne cliquée. */
+  function entryForLine(line) {
+    return line.classList.contains('jh-head') || line.classList.contains('jh-foot') ? line.parentElement : line;
+  }
+
+  /** Copie dans le presse-papiers ; repli sur execCommand (pages http, refus). */
+  function copyText(text) {
+    const legacy = () => {
+      const area = el('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+      document.body.appendChild(area);
+      area.select();
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (error) {
+        ok = false;
+      }
+      area.remove();
+      return ok;
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(() => true, legacy);
+    }
+    return Promise.resolve(legacy());
   }
 
   function childContainers(wrapper) {
@@ -445,11 +555,66 @@
     const rawView = el('pre', 'jh-raw');
     rawView.hidden = true;
     app.append(tree, rawView);
+
+    // --- Barre du chemin (valeur sélectionnée)
+    const pathbar = el('footer', 'jh-pathbar');
+    pathbar.hidden = true;
+    const styleSwitch = el('span', 'jh-switch');
+    styleSwitch.setAttribute('role', 'group');
+    styleSwitch.setAttribute('aria-label', 'Notation du chemin');
+    const jsBtn = button('JS', 'path-js', 'Notation JavaScript : data.items[0].id');
+    const jqBtn = button('jq', 'path-jq', 'Notation jq : .data.items[0].id');
+    styleSwitch.append(jsBtn, jqBtn);
+    const pathText = el('code', 'jh-path');
+    const copyPathBtn = button('Copier le chemin', 'copy-path');
+    const copyValueBtn = button('Copier la valeur', 'copy-value', 'Objets et tableaux en JSON indenté, chaînes sans guillemets');
+    const copyStatus = el('span', 'jh-sr-only');
+    copyStatus.setAttribute('role', 'status');
+    pathbar.append(styleSwitch, pathText, copyPathBtn, copyValueBtn, copyStatus);
+    app.appendChild(pathbar);
     document.body.appendChild(app);
 
     let rootWrapper = null;
     let treeBuilt = false;
     let pendingFrame = 0;
+    let selected = null; // entrée sélectionnée (ligne ou bloc)
+    let pathStyle = 'js';
+
+    function select(entry) {
+      if (selected) selected.classList.remove('jh-selected');
+      selected = entry;
+      if (selected) selected.classList.add('jh-selected');
+      updatePathbar();
+    }
+
+    function currentPath() {
+      return selected ? formatPath(pathSegments(selected), pathStyle) : '';
+    }
+
+    function updatePathbar() {
+      jsBtn.setAttribute('aria-pressed', String(pathStyle === 'js'));
+      jqBtn.setAttribute('aria-pressed', String(pathStyle === 'jq'));
+      const path = currentPath();
+      pathText.classList.toggle('jh-path-empty', !path);
+      pathText.textContent = !selected
+        ? 'Cliquez sur une ligne pour afficher son chemin'
+        : path || '(racine)';
+      copyPathBtn.disabled = !path;
+      copyValueBtn.disabled = !selected;
+    }
+
+    function copyFrom(btn, text) {
+      const label = btn.dataset.label || (btn.dataset.label = btn.textContent);
+      copyText(text).then((ok) => {
+        btn.textContent = ok ? 'Copié ✓' : 'Échec de la copie';
+        copyStatus.textContent = ok ? 'Copié dans le presse-papiers' : 'Échec de la copie';
+        clearTimeout(btn.resetTimer);
+        btn.resetTimer = setTimeout(() => {
+          btn.textContent = label;
+          copyStatus.textContent = '';
+        }, 1500);
+      });
+    }
 
     function cancelPending() {
       if (pendingFrame) cancelAnimationFrame(pendingFrame);
@@ -519,6 +684,7 @@
       if (mode === 'raw') cancelPending();
       tree.hidden = mode !== 'formatted';
       rawView.hidden = mode !== 'raw';
+      pathbar.hidden = mode !== 'formatted';
       formattedBtn.setAttribute('aria-pressed', String(mode === 'formatted'));
       rawBtn.setAttribute('aria-pressed', String(mode === 'raw'));
       const noTree = mode !== 'formatted' || !rootWrapper;
@@ -580,7 +746,46 @@
 
     tree.addEventListener('click', (event) => {
       const target = event.target.closest('.jh-toggle, .jh-summary');
-      if (target) onToggle(target, event.altKey);
+      if (target) {
+        onToggle(target, event.altKey);
+        return;
+      }
+      if (event.target.closest('a')) return; // lien : on le laisse s'ouvrir
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) return; // sélection de texte en cours
+      const line = event.target.closest('.jh-line');
+      if (line) select(entryForLine(line));
+    });
+
+    // Clavier : une flèche qui prend le focus sélectionne son bloc
+    tree.addEventListener('focusin', (event) => {
+      if (event.target.classList && event.target.classList.contains('jh-toggle')) {
+        select(event.target.closest('.jh-node'));
+      }
+    });
+
+    app.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && selected) select(null);
+    });
+
+    pathbar.addEventListener('click', (event) => {
+      const b = event.target.closest('button');
+      if (!b || b.disabled) return;
+      switch (b.dataset.action) {
+        case 'path-js':
+        case 'path-jq':
+          pathStyle = b.dataset.action === 'path-jq' ? 'jq' : 'js';
+          updatePathbar();
+          break;
+        case 'copy-path':
+          copyFrom(b, currentPath());
+          break;
+        case 'copy-value': {
+          const { node } = entryOf.get(selected);
+          copyFrom(b, node.t === 's' ? node.v : stringifyAst(node));
+          break;
+        }
+      }
     });
 
     tree.addEventListener('keydown', (event) => {
@@ -592,6 +797,7 @@
     });
 
     // --- État initial
+    updatePathbar();
     if (large) {
       setMode('raw');
       showBanner(

@@ -140,6 +140,48 @@ test('isLinkable n’accepte que http(s)', () => {
   assert.equal(jh.isLinkable(42), false);
 });
 
+test('formatPath en notation JavaScript', () => {
+  assert.equal(jh.formatPath([], 'js'), '');
+  assert.equal(jh.formatPath(['data', 'items', 3, 'id'], 'js'), 'data.items[3].id');
+  assert.equal(jh.formatPath([0, 'name'], 'js'), '[0].name');
+  assert.equal(jh.formatPath(['$ref', '_id'], 'js'), '$ref._id');
+  assert.equal(jh.formatPath(['headers', 'content-type'], 'js'), 'headers["content-type"]');
+  assert.equal(jh.formatPath(['a b', '1', '', 'é'], 'js'), '["a b"]["1"][""]["é"]');
+  assert.equal(jh.formatPath(['say "hi"'], 'js'), '["say \\"hi\\""]');
+});
+
+test('formatPath en notation jq', () => {
+  assert.equal(jh.formatPath([], 'jq'), '.');
+  assert.equal(jh.formatPath(['data', 'items', 3, 'id'], 'jq'), '.data.items[3].id');
+  assert.equal(jh.formatPath([0, 'name'], 'jq'), '.[0].name');
+  assert.equal(jh.formatPath(['headers', 'content-type'], 'jq'), '.headers["content-type"]');
+  assert.equal(jh.formatPath(['content-type'], 'jq'), '.["content-type"]');
+  assert.equal(jh.formatPath(['$ref'], 'jq'), '.["$ref"]'); // $ n'est pas un identifiant jq
+});
+
+test('stringifyAst produit la même chose que JSON.stringify(…, null, 2) sur du JSON simple', () => {
+  for (const file of ['simple.json', 'nested.json', 'root-array.json', 'root-primitive.json']) {
+    const text = jh.cleanText(fixture(file));
+    assert.equal(jh.stringifyAst(jh.parseAst(text)), JSON.stringify(JSON.parse(text), null, 2), file);
+  }
+});
+
+test('stringifyAst reste fidèle à la source', () => {
+  const out = jh.stringifyAst(jh.parseAst('{"b":1,"2":2,"big":12345678901234567890,"x":1.0,"dup":1,"dup":2,"e":{},"f":[]}'));
+  assert.equal(
+    out,
+    '{\n  "b": 1,\n  "2": 2,\n  "big": 12345678901234567890,\n  "x": 1.0,\n  "dup": 1,\n  "dup": 2,\n  "e": {},\n  "f": []\n}'
+  );
+});
+
+test('stringifyAst produit du JSON valide sur toutes les fixtures valides', () => {
+  for (const file of fs.readdirSync(FIXTURES)) {
+    const text = jh.cleanText(fixture(file));
+    if (!jh.tryParse(text).ok) continue;
+    assert.deepEqual(JSON.parse(jh.stringifyAst(jh.parseAst(text))), JSON.parse(text), file);
+  }
+});
+
 test('le seuil « gros JSON » vaut 2 Mo', () => {
   assert.equal(jh.LARGE_THRESHOLD, 2 * 1024 * 1024);
 });

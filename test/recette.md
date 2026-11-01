@@ -52,6 +52,22 @@ Installer l'extension (voir README), activer « Autoriser l'accès aux URL de fi
 | C5 | Système en mode sombre → thème sombre ; en clair → thème clair (bascule à chaud) | ☐ | ☐ |
 | C6 | La barre d'outils reste visible au défilement | ☐ | ☐ |
 
+## Chemin et copie
+
+| # | Fixture | Attendu | Chrome | Brave |
+|---|---|---|---|---|
+| K1 | simple.json | Avant tout clic : barre du bas « Cliquez sur une ligne… », boutons de copie grisés | ☐ | ☐ |
+| K2 | simple.json | Clic sur `"id": 123` → ligne surlignée, chemin `owner.id` ; **jq** → `.owner.id` | ☐ | ☐ |
+| K3 | simple.json | **Copier le chemin** → bouton « Copié ✓ », le presse-papiers contient le chemin | ☐ | ☐ |
+| K4 | simple.json | Ligne `"homepage"` → **Copier la valeur** copie l'URL sans guillemets | ☐ | ☐ |
+| K5 | edge-cases.json | Bloc racine → **Copier la valeur** : ordre b, 2, a, 1, grand entier intact, deux `dup` | ☐ | ☐ |
+| K6 | root-array.json | Clic sur un élément → chemin `[0]…` (JS) / `.[0]…` (jq) | ☐ | ☐ |
+| K7 | unicode.json | Clé vide ou accentuée → chemin entre crochets `[""]`, `["français"]` | ☐ | ☐ |
+| K8 | simple.json | Glisser pour sélectionner du texte : la ligne sélectionnée ne change pas ; Échap annule la sélection | ☐ | ☐ |
+| K9 | simple.json | Tab sur une flèche → son bloc est sélectionné et son chemin affiché | ☐ | ☐ |
+| K10 | simple.json servi en http par une IP du réseau (contexte non sécurisé) | La copie fonctionne quand même | ☐ | ☐ |
+| K11 | — | Mode Raw : la barre du chemin est masquée | ☐ | ☐ |
+
 ## Performance et sécurité (§4)
 
 | # | Attendu | Chrome | Brave |

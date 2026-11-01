@@ -30,6 +30,7 @@ Extension pour navigateurs Chromium (Chrome, Brave, Edge…) qui affiche les ré
 | Détection automatique | Header `Content-Type` JSON (`application/json`, `text/json`, `application/*+json`…) **ou** page dont le contenu brut est un objet/tableau JSON valide. |
 | Coloration syntaxique | Clés, chaînes, nombres, booléens et `null` ont chacun leur couleur. |
 | Arborescence pliable | Flèche ▾/▸ devant chaque objet et tableau. Un bloc replié affiche `{… 12 items}`. **Alt+clic** plie ou déplie récursivement. |
+| Chemin et copie | Un clic sur une ligne affiche son chemin en bas de page (`data.items[3].id`, ou `.data.items[3].id` en notation jq). **Copier le chemin** ou **Copier la valeur** (objet/tableau en JSON indenté et fidèle à la source, chaîne sans guillemets). |
 | Barre d'outils | **Tout développer**, **Tout réduire** et bascule **Formatted / Raw** pour revenir au texte brut d'origine. |
 | Thème | Clair ou sombre, selon le réglage du système. |
 | Gros fichiers | Au-delà de **2 Mo**, la vue brute s'affiche par défaut avec un bouton « Afficher l'arborescence quand même ». |
@@ -46,7 +47,7 @@ Extension pour navigateurs Chromium (Chrome, Brave, Edge…) qui affiche les ré
 
 Au choix :
 
-- **Depuis le zip :** décompressez `json-helper-1.0.0.zip`. Si vous ne l'avez pas, générez-le avec `./scripts/package.sh` (voir [Développement](#développement)).
+- **Depuis le zip :** décompressez `json-helper-1.1.0.zip`. Si vous ne l'avez pas, générez-le avec `./scripts/package.sh` (voir [Développement](#développement)).
 - **Depuis le dépôt :** utilisez directement le dossier du projet (celui qui contient `manifest.json`).
 
 > ⚠️ **Placez le dossier dans un emplacement durable**, par exemple `~/Applications/json-helper/` ou `C:\Outils\json-helper\`.
@@ -72,7 +73,7 @@ Tapez dans la barre d'adresse :
 
 1. Cliquez sur **Charger l'extension non empaquetée** (*Load unpacked*).
 2. Sélectionnez **le dossier qui contient `manifest.json`** : sélectionnez le dossier lui-même, pas un fichier qu'il contient.
-3. La carte **JSON Helper 1.0.0** apparaît avec l'icône `{ }`.
+3. La carte **JSON Helper 1.1.0** apparaît avec l'icône `{ }`.
 
 ### Étape 5 (optionnelle mais recommandée) : fichiers locaux
 
@@ -107,10 +108,14 @@ Si rien ne change, voir [Dépannage](#dépannage).
 | **Tout réduire** | Replie tout sauf la racine |
 | **Formatted / Raw** | Bascule entre l'arbre et le texte brut d'origine |
 | Tab puis Entrée / Espace | Navigation au clavier sur les flèches |
+| Clic sur une ligne | Sélectionne la valeur et affiche son chemin dans la barre du bas |
+| **JS / jq** | Choisit la notation du chemin : `headers["content-type"]` ou `.headers["content-type"]` |
+| **Copier le chemin** / **Copier la valeur** | Copie dans le presse-papiers. La valeur garde l'ordre des clés et le texte exact des nombres. |
+| Échap | Annule la sélection |
 
 À l'ouverture, tout est déplié si le JSON fait moins de 300 Ko. Au-delà, seuls les 2 premiers niveaux le sont.
 
-Le texte reste sélectionnable et copiable. Les index de tableau et les compteurs `… n items` sont exclus de la sélection.
+Le texte reste sélectionnable et copiable : un glisser-sélectionner ne change pas la ligne sélectionnée. Les index de tableau et les compteurs `… n items` sont exclus de la sélection.
 
 ---
 
@@ -157,7 +162,7 @@ Le texte reste sélectionnable et copiable. Les index de tableau et les compteur
 
 ```
 manifest.json          Déclaration MV3 (aucune permission)
-content.js             Détection, parseur fidèle, rendu, barre d'outils
+content.js             Détection, parseur fidèle, rendu, barre d'outils, chemin et copie
 styles.css             Thèmes clair/sombre, coloration (sélecteurs préfixés .jh-)
 icons/                 Icônes 16/48/128 (générées par scripts/make-icons.js)
 scripts/

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JSON Helper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Formate et structure les réponses JSON dans le navigateur.",
   "minimum_chrome_version": "102",
   "icons": {

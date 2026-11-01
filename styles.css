@@ -18,6 +18,7 @@ html.jh-active {
   --jh-btn-bg: #ffffff;
   --jh-btn-active-bg: #0969da;
   --jh-btn-active-fg: #ffffff;
+  --jh-selected: #ddf4ff;
   --jh-banner-bg: #fff8c5;
   --jh-banner-border: #d4a72c;
   --jh-key: #0550ae;
@@ -42,6 +43,7 @@ html.jh-active {
     --jh-btn-bg: #21262d;
     --jh-btn-active-bg: #1f6feb;
     --jh-btn-active-fg: #ffffff;
+    --jh-selected: rgba(56, 139, 253, 0.18);
     --jh-banner-bg: #3b2e00;
     --jh-banner-border: #9e6a03;
     --jh-key: #79c0ff;
@@ -280,4 +282,58 @@ html.jh-active body {
 .jh-bracket,
 .jh-punct {
   color: var(--jh-muted);
+}
+
+/* ---------- Sélection et barre du chemin ---------- */
+.jh-tree .jh-line {
+  cursor: default;
+}
+
+.jh-tree .jh-line:hover {
+  background: var(--jh-hover);
+}
+
+.jh-line.jh-selected,
+.jh-node.jh-selected > .jh-head,
+.jh-node.jh-selected > .jh-foot {
+  background: var(--jh-selected);
+  box-shadow: inset 2px 0 0 var(--jh-btn-active-bg);
+}
+
+.jh-pathbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--jh-bar-bg);
+  border-top: 1px solid var(--jh-bar-border);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.jh-path {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-family: var(--jh-font);
+  user-select: all;
+}
+
+.jh-path.jh-path-empty {
+  color: var(--jh-muted);
+  font-family: inherit;
+  user-select: none;
+}
+
+.jh-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
