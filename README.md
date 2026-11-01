@@ -47,8 +47,11 @@ Extension pour navigateurs Chromium (Chrome, Brave, Edge…) qui affiche les ré
 
 Au choix :
 
-- **Depuis le zip :** décompressez `json-helper-1.1.0.zip`. Si vous ne l'avez pas, générez-le avec `./scripts/package.sh` (voir [Développement](#développement)).
-- **Depuis le dépôt :** utilisez directement le dossier du projet (celui qui contient `manifest.json`).
+- **Depuis une release (recommandé) :** sur la page [Releases](https://github.com/guitehub/json-helper/releases/latest), téléchargez `json-helper-X.Y.Z.zip` dans « Assets », puis décompressez-le. Le dossier obtenu contient `manifest.json`.
+- **Depuis le dépôt :** clonez-le, puis utilisez le dossier du projet (celui qui contient `manifest.json`) :
+  ```sh
+  git clone https://github.com/guitehub/json-helper.git
+  ```
 
 > ⚠️ **Placez le dossier dans un emplacement durable**, par exemple `~/Applications/json-helper/` ou `C:\Outils\json-helper\`.
 > Le navigateur charge l'extension **depuis ce dossier à chaque démarrage** : s'il est supprimé ou déplacé (dossier Téléchargements vidé…), l'extension disparaît.
